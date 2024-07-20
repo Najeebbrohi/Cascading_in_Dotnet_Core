@@ -1,0 +1,118 @@
+﻿@using CascadingDropdownCore.ViewModels
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    <div class="text-center">
+        <h2>Cascading DropDown</h2>
+        <div class="row">
+            <div class="col-2">
+                Categories
+            </div>
+            <div class="col-4">
+                <select asp-for="Product.CategoryId" class="form-select" id="categoryid" asp-items="@ViewBag.Categories">
+                    <option disabled selected>Select Category</option>
+                </select>
+            </div>
+            <div class="col-2">
+                Products
+            </div>
+            <div class="col-4">
+                <select asp-for="Product.Id" class="form-select" id="productid"></select>
+            </div>
+        </div>
+
+        <br /><br />
+
+
+        <div class="row">
+            <div class="col-4">
+                <label>Countries</label>
+                <select asp-for="Country.Id" class="form-select" id="countryId" asp-items="@ViewBag.Countries">
+                    <option disabled selected>Select Country</option>
+                </select>
+            </div>
+            <div class="col-4">
+                <label>States</label>
+                <select asp-for="State.Id" class="form-select" id="stateId"></select>
+            </div>
+            <div class="col-4">
+                <label>Cities</label>
+                <select asp-for="City.Id" class="form-select" id="cityId"></select>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function (){
+            GetProductsByCategory();
+            GetStateByCountry();
+            GetCityByState();
+        })
+        $("#categoryid").change(function () {
+            GetProductsByCategory();
+        })
+        var GetProductsByCategory = function(){
+            $.ajax({
+                url: '@Url.Action("GetProductsByCategory","Home")',
+                type: 'GET',
+                data : { 
+                    id : $("#categoryid").val(), 
+                },
+                success : function(data){
+                    console.log(data);
+                    $("#productid").find("option").remove();
+                    $(data).each(function (index, item) {
+                            $("#productid").append('<option value="'+item.id+'">'+item.name+'</option>')
+                    })
+                }
+            })
+        }
+
+        // Country and State Script
+
+        $("#countryId").change(function(){
+            GetStateByCountry();
+        })
+        var GetStateByCountry = function(){
+            $.ajax({
+                url: "@Url.Action("GetStateByCountry","Home")",
+                type : 'GET',
+                data: {id : $("#countryId").val(),},
+                success:function(data){
+                    $("#stateId").find('option').remove();
+                    $(data).each(function (index,item) {
+                        $("#stateId").append('<option value="'+item.id+'">'+item.stateName+'</option>');
+                    })
+                }
+            });
+        }
+
+        $("#stateId").change(function () {
+            alert();
+            GetCityByState();
+        });
+
+        var GetCityByState = function(){
+            $.ajax({
+                url: '@Url.Action("GetCityByState","Home")',
+                type: 'GET',
+                data: { id: $("#stateId").val(), },
+                success: function (data) {
+                    $("#cityId").find('option').remove();
+                    $(data).each(function (index, item) {
+                        $("#cityId").append('<option value="' + item.id+'">' + item.name + '</option>')
+                    })
+                }
+            });
+        }
+
+    </script>
+}
